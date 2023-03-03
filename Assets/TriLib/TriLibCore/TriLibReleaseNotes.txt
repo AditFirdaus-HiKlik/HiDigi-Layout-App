@@ -1,0 +1,13 @@
+﻿2.1.7a
+Changelog:
+-Fixed OBJStreamReader memory leak.
+-Fixed texture compression error when using Unity native texture loader.
+-Fixed FBX materials ambient color usage.
+-Fixed STL model creation bug.
+-Improved PLY and OBJ loader performance.
+-Refactored FBX parsers.
+-Deprecated ReadAndWriteEnabled asset loader option. Please use MarkMeshesAsDynamic option instead.
+-Added ApplyGammaCurveToMaterialColors asset loader option. Disable this field to prevent TriLib from applying the gamma curve to the material colors.
+-Added FbxReader.ApplyAmbientColor static field. Turn on this field to apply ambient color to Phong materials.
+-Added StlReader.StoreTriangleIndexInTexCoord0 static field. Turn off this field to stop storing the index of the triangle in the X component of the mesh texture coordinates.
+-Added StlReader.ImportNormals static field. Turn off this field to skip STL normal importing.

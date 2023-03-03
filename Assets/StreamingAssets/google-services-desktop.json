@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "521372463811",
+    "firebase_url": "https://hidigi-layout-app-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "hidigi-layout-app",
+    "storage_bucket": "hidigi-layout-app.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:521372463811:android:aa1f015575960eb788a876",
+        "android_client_info": {
+          "package_name": "com.HiDigi.LayoutApp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "521372463811-mchgi3g1mvkgemhqqn507749ob10mifu.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAe8XZZt9zaC5xDegH5rUQfqDU8dSA8Fk8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "521372463811-mchgi3g1mvkgemhqqn507749ob10mifu.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "521372463811-mj4umobctcvqeig7tag291hbdfi4in6a.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.HiDigi.LayoutApp"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
