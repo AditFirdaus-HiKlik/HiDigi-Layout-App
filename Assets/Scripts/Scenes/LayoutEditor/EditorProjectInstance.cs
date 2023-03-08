@@ -102,8 +102,6 @@ public class EditorProjectInstanceView
     public void Init(EditorProjectInstance controller)
     {
         this.controller = controller;
-
-        Debug.Log(controller);
     }
 
     public void Render(List<InstanceData> instanceDatas)

@@ -10,11 +10,11 @@ public class AuthAPI
 {
     public static FirebaseStorage db => FirebaseStorage.GetInstance(FirebaseAPI.app);
 
-    static CoroutineHandler coroutineHandler = CoroutineHandler.instance;
+    static GlobalMonoBehaviour monoBehaviour = GlobalMonoBehaviour.instance;
 
     public static Coroutine StartCoroutine(IEnumerator coroutine)
     {
-        return coroutineHandler.StartCoroutine(coroutine);
+        return monoBehaviour.StartCoroutine(coroutine);
     }
 
     // Coroutine

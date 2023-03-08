@@ -26,7 +26,7 @@ public class CreateSessionModel : MonoBehaviourPunCallbacks
             {
                 MaxPlayers = (byte)maxUser,
                 IsOpen = true,
-                IsVisible = true
+                IsVisible = true,
             },
             TypedLobby.Default
         );

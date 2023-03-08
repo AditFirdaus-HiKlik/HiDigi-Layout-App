@@ -9,11 +9,11 @@ public class FirestoreAPI
 {
     public static FirebaseFirestore db => FirebaseFirestore.GetInstance(FirebaseAPI.app);
 
-    static CoroutineHandler coroutineHandler = CoroutineHandler.instance;
+    static GlobalMonoBehaviour monoBehaviour = GlobalMonoBehaviour.instance;
 
     public static Coroutine StartCoroutine(IEnumerator coroutine)
     {
-        return coroutineHandler.StartCoroutine(coroutine);
+        return monoBehaviour.StartCoroutine(coroutine);
     }
 
     // Coroutine

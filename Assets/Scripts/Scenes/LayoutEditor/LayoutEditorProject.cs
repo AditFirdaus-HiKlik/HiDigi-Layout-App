@@ -14,8 +14,6 @@ public class LayoutEditorProject : MonoBehaviour
     {
         instance = this;
 
-        Debug.Log(instance);
-
         Init();
     }
 

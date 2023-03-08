@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using Newtonsoft.Json;
 using UnityEngine;
 
-public static class JsonExtensions
+public static class JsonUtillity
 {
     public static T JsonToObject<T>(this string json)
     {

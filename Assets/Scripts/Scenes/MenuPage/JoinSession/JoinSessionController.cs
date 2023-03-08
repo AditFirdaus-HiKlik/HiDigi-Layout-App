@@ -29,6 +29,7 @@ public class JoinSessionController : MonoBehaviour
     public IEnumerator JoinSessionAsync()
     {
         view.SetState(false);
+        Debug.Log("Join session complete");
         yield return model.JoinSession(
             view.GetSessionID(),
             view.GetPin()

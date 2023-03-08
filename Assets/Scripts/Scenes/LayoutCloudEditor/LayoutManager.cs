@@ -83,7 +83,7 @@ public class LayoutManager : MonoBehaviour
 
         foreach (var layoutObject in layoutObjects)
         {
-            instances.Add(layoutObject.data);
+            instances.Add(layoutObject.GetLayoutInstanceData());
         }
 
         layoutData.instances = instances;
@@ -127,6 +127,10 @@ public class LayoutManager : MonoBehaviour
 
     public static void DestroyLayoutObject(LayoutObject layoutObject)
     {
+        if (layoutObject == null)
+        {
+            return;
+        }
         PhotonNetwork.Destroy(layoutObject.gameObject);
     }
 
@@ -141,8 +145,6 @@ public class LayoutManager : MonoBehaviour
         if (layoutObject == null)
         {
             layoutObject = PhotonNetwork.Instantiate("LayoutObject", Vector3.zero, Quaternion.identity);
-
-            layoutObject.GetComponent<PhotonView>().TransferOwnership(PhotonNetwork.LocalPlayer);
         }
 
         LayoutObject layoutObjectComponent = layoutObject.GetComponent<LayoutObject>();
@@ -156,7 +158,7 @@ public class LayoutManager : MonoBehaviour
 
         Debug.Log("Layout object component: " + layoutObjectComponent.name);
 
-        layoutObjectComponent.SetLayoutInstanceDataAcrossNetwork(layoutInstanceData);
+        layoutObjectComponent.SetLayoutInstanceData(layoutInstanceData);
 
         OnLayoutDataSyncing.Invoke(false);
 
@@ -178,7 +180,6 @@ public class LayoutManager : MonoBehaviour
             yield return new WaitForSeconds(0.5f);
 
             yield return FirestoreAPI.SetDocument("sessions", layoutID, layoutData.ToDictionary());
-
 
             Debug.Log("Layout data saved");
         }

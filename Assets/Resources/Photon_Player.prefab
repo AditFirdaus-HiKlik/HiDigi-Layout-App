@@ -49,7 +49,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   photonView: {fileID: 1124775778784482058}
   playerRenderer: {fileID: 1124775779494192339}
-  hexColor: A49ED6
+  hexColor: A11946
 --- !u!114 &1124775778784482058
 MonoBehaviour:
   m_ObjectHideFlags: 0

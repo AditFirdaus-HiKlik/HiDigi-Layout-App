@@ -28,7 +28,6 @@ public class LayoutInstanceData
         if (dictionary.ContainsKey("data")) layoutInstanceData.data = InstanceData.FromDictionary(dictionary["data"] as Dictionary<string, object>);
         if (dictionary.ContainsKey("transform")) layoutInstanceData.transform = LayoutTransform.FromDictionary(dictionary["transform"] as Dictionary<string, object>);
         if (dictionary.ContainsKey("metadata")) layoutInstanceData.metadata = LayoutInstanceMetadata.FromDictionary(dictionary["metadata"] as Dictionary<string, object>);
-        Debug.Log(dictionary.ContainsKey("metadata"));
         return layoutInstanceData;
     }
 
