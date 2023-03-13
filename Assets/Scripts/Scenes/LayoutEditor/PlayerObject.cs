@@ -3,11 +3,9 @@ using System.Collections.Generic;
 using UnityEngine;
 using Photon.Pun;
 
-public class PlayerObject : MonoBehaviour
+public class PlayerObject : MonoBehaviourPunCallbacks
 {
     public static PlayerObject localPlayerInstance;
-
-    public PhotonView photonView;
     public Renderer playerRenderer;
     public string hexColor = null;
 

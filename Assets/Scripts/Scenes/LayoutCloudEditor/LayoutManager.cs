@@ -11,6 +11,8 @@ public class LayoutManager : MonoBehaviour
 {
     public static LayoutManager instance;
 
+    public static Photon.Realtime.Player masterClient => PhotonNetwork.MasterClient;
+
     public static string layoutID = "layout_default";
     public static LayoutData layoutData = new LayoutData();
 
@@ -55,7 +57,7 @@ public class LayoutManager : MonoBehaviour
 
         foreach (var layoutObject in layoutObjects)
         {
-            DestroyLayoutObject(layoutObject);
+            yield return DestroyLayoutObject(layoutObject);
         }
 
         Debug.Log("Layout instance cleared");
@@ -69,7 +71,7 @@ public class LayoutManager : MonoBehaviour
 
         foreach (var instance in layoutData.instances)
         {
-            InstantiateLayoutObject(instance);
+            yield return InstantiateLayoutObject(instance);
         }
 
         Debug.Log("Layout instance loaded");
@@ -125,40 +127,46 @@ public class LayoutManager : MonoBehaviour
         return instance.StartCoroutine(InstantiateLayoutObjectAsync(layoutInstanceData));
     }
 
-    public static void DestroyLayoutObject(LayoutObject layoutObject)
+    public static Coroutine DestroyLayoutObject(LayoutObject layoutObject)
     {
         if (layoutObject == null)
         {
-            return;
+            return null;
         }
-        PhotonNetwork.Destroy(layoutObject.gameObject);
+
+        return layoutObject.Delete();
     }
 
     static IEnumerator InstantiateLayoutObjectAsync(LayoutInstanceData layoutInstanceData)
     {
         OnLayoutDataSyncing.Invoke(true);
 
-        yield return new WaitForSeconds(0.5f);
+        GameObject layoutObject = null;
+        LayoutObject layoutObjectComponent = null;
 
-        GameObject layoutObject = PhotonNetwork.InstantiateRoomObject("LayoutObject", Vector3.zero, Quaternion.identity);
-
-        if (layoutObject == null)
+        // 3 Times to try
+        for (int i = 0; i < 3; i++)
         {
             layoutObject = PhotonNetwork.Instantiate("LayoutObject", Vector3.zero, Quaternion.identity);
+
+            if (layoutObject != null)
+            {
+                Debug.Log("LayoutObject is not null, break the loop");
+                layoutObjectComponent = layoutObject.GetComponent<LayoutObject>();
+                break;
+            }
+            Debug.Log("LayoutObject is null, try again");
         }
-
-        LayoutObject layoutObjectComponent = layoutObject.GetComponent<LayoutObject>();
-
-        if (layoutObjectComponent == null)
-        {
-            layoutObjectComponent = layoutObject.AddComponent<LayoutObject>();
-        }
-
-        layoutObjectComponent.Select();
-
-        Debug.Log("Layout object component: " + layoutObjectComponent.name);
 
         layoutObjectComponent.SetLayoutInstanceData(layoutInstanceData);
+
+        yield return layoutObjectComponent.view.LoadModel();
+
+        layoutObjectComponent.view.CreateBounds();
+
+        layoutObjectComponent.UpdateTransform();
+
+        layoutObjectComponent.Select();
 
         OnLayoutDataSyncing.Invoke(false);
 
@@ -241,4 +249,5 @@ public class LayoutManager : MonoBehaviour
 
         OnLayoutDataSyncing.Invoke(false);
     }
+
 }

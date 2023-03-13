@@ -29,15 +29,14 @@ public class JoinSessionController : MonoBehaviour
     public IEnumerator JoinSessionAsync()
     {
         view.SetState(false);
-        Debug.Log("Join session complete");
         yield return model.JoinSession(
             view.GetSessionID(),
             view.GetPin()
         );
+        Debug.Log("Join session complete");
+        // Wait until user is in room
+        yield return new WaitUntil(() => PhotonNetwork.InRoom);
         view.SetState(true);
-        if (PhotonNetwork.InRoom)
-        {
-            LoadScene("LayoutCloudEditor");
-        }
+        LoadScene("LayoutCloudEditor");
     }
 }

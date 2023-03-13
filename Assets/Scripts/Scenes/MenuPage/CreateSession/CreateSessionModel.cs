@@ -20,6 +20,8 @@ public class CreateSessionModel : MonoBehaviourPunCallbacks
 
         LayoutManager.layoutID = sessionID;
 
+        Debug.LogError("Creating room: " + sessionID, this);
+
         PhotonNetwork.JoinOrCreateRoom(
             sessionID,
             new Photon.Realtime.RoomOptions
@@ -27,6 +29,7 @@ public class CreateSessionModel : MonoBehaviourPunCallbacks
                 MaxPlayers = (byte)maxUser,
                 IsOpen = true,
                 IsVisible = true,
+                CleanupCacheOnLeave = false,
             },
             TypedLobby.Default
         );
@@ -36,13 +39,14 @@ public class CreateSessionModel : MonoBehaviourPunCallbacks
             yield return null;
         }
 
+        Debug.LogError("Room created: " + sessionID, this);
+
         yield return null;
     }
 
     public override void OnCreatedRoom()
     {
         isCreatingSession = false;
-        Debug.Log("Room created successfully");
     }
 
     public override void OnCreateRoomFailed(short returnCode, string message)

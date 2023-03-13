@@ -18,6 +18,9 @@ public class LayoutObject : MonoBehaviourPun, IPunObservable
     [SerializeField]
     public LayoutInstanceData data = new LayoutInstanceData();
 
+    [SerializeField]
+    public bool isSelected = false;
+
     [Header("MVC")]
     public LayoutObjectView view = new LayoutObjectView();
     public LayoutObjectModel model = new LayoutObjectModel();
@@ -41,20 +44,16 @@ public class LayoutObject : MonoBehaviourPun, IPunObservable
         GizmosHandler.instance.SetGizmoTarget(this);
     }
 
-    private void Start()
+    public void Refresh()
     {
-        Refresh();
-
-        view.LoadModel();
+        view.Refresh();
     }
 
-    public void Refresh()
+    public void UpdateTransform()
     {
         transform.position = data.transform.position;
         transform.eulerAngles = data.transform.rotation;
         transform.localScale = data.transform.scale;
-
-        view.Refresh();
     }
 
     public void TransferOwnership(Photon.Realtime.Player player)
@@ -90,20 +89,6 @@ public class LayoutObject : MonoBehaviourPun, IPunObservable
         SetInstanceDataAcrossNetwork(layoutInstanceData.data);
         Refresh();
     }
-
-    // [PunRPC]
-    // public void SetLayoutInstanceDataJson(string layoutInstanceData)
-    // {
-    //     SetLayoutInstanceData(layoutInstanceData.JsonToObject<LayoutInstanceData>());
-    // }
-
-    // public void SetLayoutInstanceDataAcrossNetwork(LayoutInstanceData layoutInstanceData)
-    // {
-    //     data = layoutInstanceData;
-    //     string layoutInstanceDataJson = layoutInstanceData.ObjectToJson();
-    //     photonView.RPC("SetLayoutInstanceDataJson", RpcTarget.AllBuffered, layoutInstanceDataJson);
-    // }
-
     public LayoutTransform GetLayoutTransform()
     {
         data.transform.position = transform.position;
@@ -119,9 +104,15 @@ public class LayoutObject : MonoBehaviourPun, IPunObservable
         return data;
     }
 
-    public void Delete()
+    public Coroutine Delete()
     {
-        TransferOwnership(PhotonNetwork.MasterClient);
+        return StartCoroutine(_Delete());
+    }
+
+    IEnumerator _Delete()
+    {
+        TransferOwnership(PhotonNetwork.LocalPlayer);
+        yield return new WaitUntil(() => photonView.IsMine);
         PhotonNetwork.Destroy(gameObject);
     }
 
@@ -131,7 +122,6 @@ public class LayoutObject : MonoBehaviourPun, IPunObservable
         {
             data.transform = GetLayoutTransform();
             string dataJson = data.ObjectToJson();
-            Debug.Log("OnPhotonSerializeView: " + dataJson);
             stream.SendNext(dataJson);
         }
         else
@@ -165,72 +155,25 @@ public class LayoutObjectView
 
     }
 
-    public void LoadModel()
+    public Coroutine LoadModel()
     {
-        if (loadModelCoroutine != null) return;
-        loadModelCoroutine = controller.StartCoroutine(LoadModelAsync());
+        return loadModelCoroutine = ModelCacheHandler.instance.GetModel(controller.data.data.model, OnModelLoaded);
     }
 
-    public IEnumerator LoadModelAsync()
+    public void OnModelLoaded(GameObject modelObject)
     {
         if (modelObjectWrapper != null) GameObject.Destroy(modelObjectWrapper);
 
-        if (controller.data.data.model.url.Length == 0) yield break;
+        modelObjectWrapper = modelObject;
 
-        InstanceData data = controller.data.data;
-        InstanceDataModel model = data.model;
+        modelObjectWrapper.transform.SetParent(controller.transform);
+        modelObjectWrapper.transform.localPosition = Vector3.zero;
+        modelObjectWrapper.transform.localRotation = Quaternion.identity;
+        modelObjectWrapper.transform.localScale = Vector3.one;
 
-        Debug.Log("Loading model: " + model.fileName);
+        CreateBounds();
 
-        string path = Path.Combine(Application.persistentDataPath, "Temp", "Assets", "Models", data.id + data.model.fileExtension);
-
-        var www = new UnityWebRequest(model.url);
-
-        Debug.Log("Model path: " + path);
-
-        if (!Directory.Exists(Path.GetDirectoryName(path)))
-        {
-            Directory.CreateDirectory(Path.GetDirectoryName(path));
-        }
-
-        if (!File.Exists(path)) www.downloadHandler = new DownloadHandlerFile(path);
-
-        yield return www.SendWebRequest();
-
-        if (www.result == UnityWebRequest.Result.ConnectionError)
-        {
-            Debug.Log(www.error);
-        }
-        else
-        {
-            modelObjectWrapper = new GameObject("Wrapper");
-
-            modelObjectWrapper.transform.SetParent(controller.transform);
-            modelObjectWrapper.transform.localPosition = Vector3.zero;
-            modelObjectWrapper.transform.localRotation = Quaternion.identity;
-            modelObjectWrapper.transform.localScale = Vector3.one;
-
-            GameObject rootGameObject = null;
-            bool isLoaded = false;
-
-            var context = AssetLoader.LoadModelFromFile(
-                path,
-                wrapperGameObject: modelObjectWrapper,
-                onMaterialsLoad: (context) =>
-                {
-                    rootGameObject = context.RootGameObject;
-                    isLoaded = true;
-                }
-            );
-
-            var task = context.Task;
-
-            yield return new WaitUntil(() => isLoaded);
-
-            CreateBounds();
-
-            Debug.Log("Model loaded: " + data.id);
-        }
+        loadModelCoroutine = null;
     }
 
     public void CreateBounds()
@@ -238,15 +181,15 @@ public class LayoutObjectView
         Transform transform = controller.transform;
 
         bounds = new Bounds(transform.position, Vector3.zero);
+
         renderers = controller.GetComponentsInChildren<Renderer>();
+
         if (renderers != null)
         {
             foreach (Renderer renderer in renderers)
             {
                 bounds.Encapsulate(renderer.bounds);
             }
-
-            Debug.Log("renderers found");
             boxCollider.center = transform.InverseTransformPoint(bounds.center);
             boxCollider.size = bounds.size;
 
@@ -254,8 +197,6 @@ public class LayoutObjectView
         }
         else
         {
-            Debug.Log("No renderers found");
-
             boxCollider.size = Vector3.zero;
         }
     }

@@ -62,6 +62,7 @@ public class InstanceDataPreview
 [System.Serializable]
 public class InstanceDataModel
 {
+    public string guid = Guid.NewGuid().ToString();
     public string url = "";
     public string fileName = "";
     public string fileExtension = "";
@@ -69,6 +70,7 @@ public class InstanceDataModel
     public Dictionary<string, object> ToDictionary()
     {
         var dictionary = new Dictionary<string, object>();
+        dictionary.Add("guid", guid);
         dictionary.Add("url", url);
         dictionary.Add("fileName", fileName);
         dictionary.Add("fileExtension", fileExtension);
@@ -78,6 +80,7 @@ public class InstanceDataModel
     public static InstanceDataModel FromDictionary(Dictionary<string, object> dictionary)
     {
         var instanceDataModel = new InstanceDataModel();
+        if (dictionary.ContainsKey("guid")) instanceDataModel.guid = dictionary["guid"].ToString();
         if (dictionary.ContainsKey("url")) instanceDataModel.url = dictionary["url"].ToString();
         if (dictionary.ContainsKey("fileName")) instanceDataModel.fileName = dictionary["fileName"].ToString();
         if (dictionary.ContainsKey("fileExtension")) instanceDataModel.fileExtension = dictionary["fileExtension"].ToString();

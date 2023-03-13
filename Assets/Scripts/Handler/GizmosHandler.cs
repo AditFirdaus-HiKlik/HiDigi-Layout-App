@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Photon.Pun;
 using UnityEngine.Events;
 
 using RuntimeGizmos;
@@ -41,7 +42,7 @@ public class GizmosHandler : MonoBehaviour
         selectedTransform = target;
         selectedObject = target.GetComponent<LayoutObject>();
 
-        selectedObject.TransferOwnership(Photon.Pun.PhotonNetwork.LocalPlayer);
+        selectedObject.TransferOwnership(PhotonNetwork.LocalPlayer);
 
         OnAddObject.Invoke(selectedObject);
     }

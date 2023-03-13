@@ -58,6 +58,7 @@ MonoBehaviour:
         fileName: 
         fileExtension: 
       model:
+        guid: 67699954-b34f-4160-a409-42dfe3203021
         url: 
         fileName: 
         fileExtension: 
@@ -68,6 +69,7 @@ MonoBehaviour:
     metadata:
       title: 
       description: 
+  isSelected: 0
   view:
     controller: {fileID: 0}
     boxCollider: {fileID: 1835348327421850677}

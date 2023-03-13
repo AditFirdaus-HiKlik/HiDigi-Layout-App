@@ -19,6 +19,10 @@ public class JoinSessionModel : MonoBehaviourPunCallbacks
 
         LayoutManager.layoutID = sessionID;
 
+        // Get lists of rooms
+        Debug.Log("Getting room list");
+        Debug.Log("Room list: " + PhotonNetwork.CountOfRooms);
+
         PhotonNetwork.JoinRoom(
             sessionID
         );
@@ -31,15 +35,15 @@ public class JoinSessionModel : MonoBehaviourPunCallbacks
         yield return null;
     }
 
-    public override void OnCreatedRoom()
+    public override void OnJoinedRoom()
     {
         isJoiningSession = false;
-        Debug.Log("Room created successfully");
+        Debug.Log("Room joined");
     }
 
-    public override void OnCreateRoomFailed(short returnCode, string message)
+    public override void OnJoinRoomFailed(short returnCode, string message)
     {
         isJoiningSession = false;
-        Debug.Log("Room creation failed: " + message);
+        Debug.Log("Room join failed: " + message);
     }
 }

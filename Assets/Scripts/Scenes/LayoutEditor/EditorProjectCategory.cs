@@ -40,9 +40,6 @@ public class EditorProjectCategory : MonoBehaviour
         focusedCategory = category;
         focusedCategoryID = category.id;
 
-        Debug.Log(projectController);
-        Debug.Log(category);
-
         projectController.RenderInstance(category.GetInstances());
 
         Debug.Log("Category selected: " + category.name);
