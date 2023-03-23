@@ -22,6 +22,8 @@ public class ProjectInstanceEdit : ScreenBehaviour
         set => screenData["instanceData"] = value;
     }
 
+    public InstanceData instanceDataTemp = new InstanceData();
+
     public bool isNew
     {
         get => (bool)screenData.GetValueOrDefault("isNew", false);
@@ -36,13 +38,13 @@ public class ProjectInstanceEdit : ScreenBehaviour
 
     public InstanceDataPreview pickedPreview
     {
-        get => screenData.GetValueOrDefault("pickedPreview", new InstanceDataPreview()) as InstanceDataPreview;
+        get => screenData.GetValueOrDefault("pickedPreview", instanceDataTemp.preview) as InstanceDataPreview;
         set => screenData["pickedPreview"] = value;
     }
 
     public InstanceDataModel pickedModel
     {
-        get => screenData.GetValueOrDefault("pickedModel", new InstanceDataModel()) as InstanceDataModel;
+        get => screenData.GetValueOrDefault("pickedModel", instanceDataTemp.model) as InstanceDataModel;
         set => screenData["pickedModel"] = value;
     }
 
@@ -59,6 +61,8 @@ public class ProjectInstanceEdit : ScreenBehaviour
     public void Init()
     {
         if (isNew) RandomizeGUID();
+
+        CreateTempInstanceData();
 
         model.Init(this);
         view.Init(this);
@@ -78,52 +82,22 @@ public class ProjectInstanceEdit : ScreenBehaviour
 
     public void PickPreview()
     {
-        StandaloneFileBrowser.OpenFilePanelAsync("Select preview image", "", new[] { new ExtensionFilter("Image Files", "png", "jpg", "jpeg") }, false, (result) =>
-        {
-            if (result.Count > 0)
-            {
-                string path = result[0].Name;
-
-                string fileName = Path.GetFileName(path);
-                string fileExtension = Path.GetExtension(path);
-
-                InstanceDataPreview previewData = pickedPreview;
-
-                previewData.url = $"file://{path}";
-                previewData.fileName = fileName;
-                previewData.fileExtension = fileExtension;
-
-                pickedPreview = previewData;
-                usePickedPreview = true;
-
-                view.Refresh();
-            }
-        });
+        StartCoroutine(PickPreviewAsync());
     }
 
     public void PickModel()
     {
-        StandaloneFileBrowser.OpenFilePanelAsync("Select model", "", new[] { new ExtensionFilter("Model Files", "fbx", "obj", "gltf", "glb") }, false, (result) =>
-        {
-            if (result.Count > 0)
-            {
-                string path = result[0].Name;
+        StartCoroutine(PickModelAsync());
+    }
 
-                string fileName = Path.GetFileName(path);
-                string fileExtension = Path.GetExtension(path);
+    public void SetZip(bool value)
+    {
+        view.instanceIsZipped = value;
+    }
 
-                InstanceDataModel modelData = pickedModel;
-
-                modelData.url = $"file://{path}";
-                modelData.fileName = fileName;
-                modelData.fileExtension = fileExtension;
-
-                pickedModel = modelData;
-                usePickedModel = true;
-
-                view.Refresh();
-            }
-        });
+    public void SetName(string value)
+    {
+        view.instanceName = value;
     }
 
     public void SaveInstance()
@@ -136,9 +110,17 @@ public class ProjectInstanceEdit : ScreenBehaviour
         StartCoroutine(DeleteInstanceAsync());
     }
 
-    public IEnumerator SaveInstanceAsync()
+    public void CreateTempInstanceData()
     {
-        instanceData.name = view.name_InputField.text;
+        instanceDataTemp = JsonUtility.FromJson<InstanceData>(JsonUtility.ToJson(instanceData));
+
+        pickedPreview = instanceDataTemp.preview;
+        pickedModel = instanceDataTemp.model;
+    }
+
+    IEnumerator SaveInstanceAsync()
+    {
+        instanceData = JsonUtility.FromJson<InstanceData>(JsonUtility.ToJson(instanceDataTemp));
 
         view.SetLoadingIndicator(true);
 
@@ -149,7 +131,7 @@ public class ProjectInstanceEdit : ScreenBehaviour
         Close();
     }
 
-    public IEnumerator DeleteInstanceAsync()
+    IEnumerator DeleteInstanceAsync()
     {
         view.SetLoadingIndicator(true);
 
@@ -159,6 +141,20 @@ public class ProjectInstanceEdit : ScreenBehaviour
 
         Close();
     }
+
+    IEnumerator PickPreviewAsync()
+    {
+        yield return model.PickPreview();
+
+        view.RefreshPreview();
+    }
+
+    IEnumerator PickModelAsync()
+    {
+        yield return model.PickModel();
+
+        view.RefreshModel();
+    }
 }
 
 [System.Serializable]
@@ -166,15 +162,62 @@ public class ProjectInstanceEditView
 {
     [HideInInspector] public ProjectInstanceEdit controller;
 
+    public InstanceData tempData => controller.instanceDataTemp;
+
     public GameObject save_Button;
     public GameObject delete_Button;
     public Button pickPreview_Button;
     public Button pickModel_Button;
+    public Toggle zip_toggle;
 
     public TMP_InputField name_InputField;
     public Image preview_Image;
     public TMP_Text model_Text;
     public LoadingIndicator loadingIndicator;
+
+    public bool instanceIsZipped
+    {
+        set
+        {
+            instanceModel.isZipped = value;
+            RefreshZipToggle();
+        }
+        get => tempData.model.isZipped;
+    }
+
+    public string instanceName
+    {
+        set
+        {
+            tempData.name = value;
+            RefreshName();
+        }
+        get => tempData.name;
+    }
+
+    public InstanceDataPreview instancePreview
+    {
+        set
+        {
+            tempData.preview = value;
+
+            if (tempData.preview.url != value.url)
+            {
+                RefreshPreview();
+            }
+        }
+        get => tempData.preview;
+    }
+
+    public InstanceDataModel instanceModel
+    {
+        set
+        {
+            tempData.model = value;
+            RefreshModel();
+        }
+        get => tempData.model;
+    }
 
     Coroutine refreshPreviewCoroutine;
 
@@ -187,14 +230,23 @@ public class ProjectInstanceEditView
 
     public void Refresh()
     {
-        Debug.Log(controller.instanceData.ObjectToJson());
-        name_InputField.text = controller.instanceData.name;
-
         SetSaveButton(controller.isEdit);
         SetDeleteButton(controller.isEdit);
 
+        RefreshZipToggle();
+        RefreshName();
         RefreshPreview();
         RefreshModel();
+    }
+
+    public void RefreshZipToggle()
+    {
+        zip_toggle.isOn = instanceIsZipped;
+    }
+
+    public void RefreshName()
+    {
+        name_InputField.text = instanceName;
     }
 
     public void RefreshPreview()
@@ -207,9 +259,9 @@ public class ProjectInstanceEditView
     {
         string fileName = "";
 
-        if (controller.instanceData.model != null)
+        if (instanceModel != null)
         {
-            fileName = controller.instanceData.model.fileName;
+            fileName = instanceModel.fileName;
         }
 
         if (controller.usePickedModel)
@@ -229,16 +281,14 @@ public class ProjectInstanceEditView
     {
         SetPickPreviewButton(false);
 
-        var previewData = controller.instanceData.preview;
-
-        if (previewData != null)
+        if (instancePreview != null)
         {
-            string url = previewData.url;
+            string url = instancePreview.url;
 
             if (controller.usePickedPreview)
             {
-                previewData = controller.pickedPreview;
-                url = previewData.url;
+                instancePreview = controller.pickedPreview;
+                url = instancePreview.url;
             }
 
             // Using unityWebRequest to load the image
@@ -250,7 +300,7 @@ public class ProjectInstanceEditView
             // Check if there were any errors
             if (www.result != UnityWebRequest.Result.Success)
             {
-                Debug.Log(www.error);
+                DebugApp.Log(www.error);
             }
             else
             {
@@ -285,11 +335,6 @@ public class ProjectInstanceEditView
         delete_Button.SetActive(value);
     }
 
-    public string GetNameInput()
-    {
-        return name_InputField.text;
-    }
-
     public void SetLoadingIndicator(bool value)
     {
         loadingIndicator.SetLoading(value);
@@ -301,9 +346,36 @@ public class ProjectInstanceEditModel
 {
     [HideInInspector] public ProjectInstanceEdit controller;
 
+    public InstanceData tempData => controller.instanceDataTemp;
+
+    public bool instanceIsZipped
+    {
+        set => instanceModel.isZipped = value;
+        get => tempData.model.isZipped;
+    }
+
+    public string instanceName
+    {
+        set => tempData.name = value;
+        get => tempData.name;
+    }
+
+    public InstanceDataPreview instancePreview => controller.instanceDataTemp.preview;
+    public InstanceDataModel instanceModel => controller.instanceDataTemp.model;
+
     public void Init(ProjectInstanceEdit controller)
     {
         this.controller = controller;
+    }
+
+    public Coroutine PickPreview()
+    {
+        return controller.StartCoroutine(PickPreviewAsync());
+    }
+
+    public Coroutine PickModel()
+    {
+        return controller.StartCoroutine(PickModelAsync());
     }
 
     public Coroutine SaveInstance(InstanceData instanceData)
@@ -326,7 +398,72 @@ public class ProjectInstanceEditModel
         return controller.StartCoroutine(UploadModelAsync());
     }
 
-    private IEnumerator SaveInstanceAsync(InstanceData instanceData)
+    public Coroutine DeletePreview()
+    {
+        return controller.StartCoroutine(DeletePreviewAsync());
+    }
+
+    public Coroutine DeleteModel()
+    {
+        return controller.StartCoroutine(DeleteModelAsync());
+    }
+
+    IEnumerator PickPreviewAsync()
+    {
+        DebugApp.Log("PickPreviewAsync: Opening File Panel...");
+
+        bool isPicked = false;
+
+        StandaloneFileBrowser.OpenFilePanelAsync("Select preview image", "", new[] { new ExtensionFilter("Image Files", "png", "jpg", "jpeg") }, false, (result) =>
+        {
+            DebugApp.Log("PickPreviewAsync: File Panel Closed");
+
+            if (result.Count > 0)
+            {
+                string path = result[0].Name;
+
+                DebugApp.Log($"PickPreviewAsync: Picked file: {path}");
+
+                instancePreview.url = $"file://{path}";
+                instancePreview.fileName = Path.GetFileName(path);
+                instancePreview.fileExtension = Path.GetExtension(path);
+
+                controller.usePickedPreview = true;
+
+                isPicked = true;
+            }
+        });
+
+        yield return new WaitUntil(() => isPicked);
+    }
+
+    IEnumerator PickModelAsync()
+    {
+        bool isPicked = false;
+
+        ExtensionFilter[] filters = instanceIsZipped ? new[] { new ExtensionFilter("Model Files", "zip") } : new[] { new ExtensionFilter("Model Files", "fbx", "obj") };
+
+        StandaloneFileBrowser.OpenFilePanelAsync("Select model file", "", filters, false, (result) =>
+        {
+            if (result.Count > 0)
+            {
+                string path = result[0].Name;
+
+                instanceModel.url = $"file://{path}";
+                instanceModel.isZipped = instanceIsZipped;
+                instanceModel.fileName = Path.GetFileName(path);
+                instanceModel.fileExtension = Path.GetExtension(path);
+
+                controller.usePickedModel = true;
+
+                isPicked = true;
+            }
+        });
+
+        yield return new WaitUntil(() => isPicked);
+    }
+
+    IEnumerator SaveInstanceAsync(InstanceData instanceData)
     {
         LayoutDataProject projectData = LayoutManager.layoutData.project;
 
@@ -365,7 +502,7 @@ public class ProjectInstanceEditModel
         yield return LayoutManager.SaveLayoutData();
     }
 
-    private IEnumerator DeleteInstanceAsync(InstanceData instanceData)
+    IEnumerator DeleteInstanceAsync(InstanceData instanceData)
     {
         LayoutDataProject projectData = LayoutManager.layoutData.project;
 
@@ -397,23 +534,10 @@ public class ProjectInstanceEditModel
         yield return LayoutManager.SaveLayoutData();
     }
 
-    public Coroutine DeletePreview()
+    IEnumerator UploadImageAsync()
     {
-        return controller.StartCoroutine(DeletePreviewAsync());
-    }
-
-    public Coroutine DeleteModel()
-    {
-        return controller.StartCoroutine(DeleteModelAsync());
-    }
-
-    public IEnumerator UploadImageAsync()
-    {
-        InstanceData instanceData = controller.instanceData;
-        InstanceDataPreview previewData = controller.pickedPreview;
-
         // Using unityWebRequest to load the image
-        UnityWebRequest www = UnityWebRequestTexture.GetTexture(previewData.url);
+        UnityWebRequest www = UnityWebRequestTexture.GetTexture(instancePreview.url);
 
         // Wait for the request to complete
         yield return www.SendWebRequest();
@@ -421,7 +545,7 @@ public class ProjectInstanceEditModel
         // Check if there were any errors
         if (www.result != UnityWebRequest.Result.Success)
         {
-            Debug.Log(www.error);
+            DebugApp.Log(www.error);
         }
         else
         {
@@ -431,7 +555,7 @@ public class ProjectInstanceEditModel
             // Set the texture to the image
             byte[] bytes = texture.EncodeToJPG(75);
 
-            string previewPath = $"sessions/{LayoutManager.layoutID}/previews/{instanceData.id}.jpg";
+            string previewPath = $"sessions/{LayoutManager.layoutID}/previews/{tempData.id}.jpg";
 
             StorageReference metadata = null;
 
@@ -445,27 +569,24 @@ public class ProjectInstanceEditModel
 
                 if (task.IsFaulted)
                 {
-                    Debug.LogError(task.Exception);
+                    DebugApp.Log(task.Exception.Message);
                 }
                 else
                 {
                     string url = task.Result.ToString();
 
-                    previewData.url = url;
+                    instancePreview.url = url;
 
-                    controller.instanceData.preview = previewData;
+                    controller.instanceData.preview = instancePreview;
                 }
             }
         }
     }
 
-    public IEnumerator UploadModelAsync()
+    IEnumerator UploadModelAsync()
     {
-        InstanceData instanceData = controller.instanceData;
-        InstanceDataModel modelData = controller.pickedModel;
-
         // Using unityWebRequest to load the image
-        UnityWebRequest www = UnityWebRequest.Get(modelData.url);
+        UnityWebRequest www = UnityWebRequest.Get(instanceModel.url);
 
         // Wait for the request to complete
         yield return www.SendWebRequest();
@@ -473,14 +594,14 @@ public class ProjectInstanceEditModel
         // Check if there were any errors
         if (www.result != UnityWebRequest.Result.Success)
         {
-            Debug.Log(www.error);
+            DebugApp.Log(www.error);
         }
         else
         {
             // Get the texture from the request
             byte[] bytes = www.downloadHandler.data;
 
-            string modelPath = $"sessions/{LayoutManager.layoutID}/models/{instanceData.id}{modelData.fileExtension}";
+            string modelPath = $"sessions/{LayoutManager.layoutID}/models/{tempData.id}{instanceModel.fileExtension}";
 
             StorageReference metadata = null;
 
@@ -494,36 +615,30 @@ public class ProjectInstanceEditModel
 
                 if (task.IsFaulted)
                 {
-                    Debug.LogError(task.Exception);
+                    DebugApp.Log(task.Exception.Message);
                 }
                 else
                 {
                     string url = task.Result.ToString();
 
-                    modelData.url = url;
+                    instanceModel.url = url;
 
-                    controller.instanceData.model = modelData;
+                    controller.instanceData.model = instanceModel;
                 }
             }
         }
     }
 
-    public IEnumerator DeletePreviewAsync()
+    IEnumerator DeletePreviewAsync()
     {
-        InstanceData instanceData = controller.instanceData;
-        InstanceDataPreview previewData = controller.pickedPreview;
-
-        string previewPath = $"sessions/{LayoutManager.layoutID}/previews/{instanceData.id}.jpg";
+        string previewPath = $"sessions/{LayoutManager.layoutID}/previews/{tempData.id}.jpg";
 
         yield return StorageAPI.DeleteFile(previewPath, () => { });
     }
 
-    public IEnumerator DeleteModelAsync()
+    IEnumerator DeleteModelAsync()
     {
-        InstanceData instanceData = controller.instanceData;
-        InstanceDataModel modelData = controller.pickedModel;
-
-        string modelPath = $"sessions/{LayoutManager.layoutID}/models/{instanceData.id}{modelData.fileExtension}";
+        string modelPath = $"sessions/{LayoutManager.layoutID}/models/{tempData.id}{instanceModel.fileExtension}";
 
         yield return StorageAPI.DeleteFile(modelPath, () => { });
     }

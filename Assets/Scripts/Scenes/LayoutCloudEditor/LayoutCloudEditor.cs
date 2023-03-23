@@ -81,7 +81,7 @@ public class LayoutCloudEditorModel
     {
         if (snapshot.Exists)
         {
-            Debug.Log("Document data for " + snapshot.Id + " document:");
+            DebugApp.Log("Document data for " + snapshot.Id + " document:");
             Dictionary<string, object> documentDictionary = snapshot.ToDictionary();
 
             LayoutData layoutData = LayoutData.FromDictionary(documentDictionary);
@@ -90,7 +90,7 @@ public class LayoutCloudEditorModel
         }
         else
         {
-            Debug.Log("Document " + snapshot.Id + " does not exist!");
+            DebugApp.Log("Document " + snapshot.Id + " does not exist!");
         }
     }
 }

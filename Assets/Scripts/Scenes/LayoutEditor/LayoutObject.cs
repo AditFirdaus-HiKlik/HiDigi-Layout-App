@@ -9,7 +9,7 @@ using TriLibCore;
 
 using Photon.Pun;
 
-public class LayoutObject : MonoBehaviourPun, IPunObservable
+public class LayoutObject : MonoBehaviourPun, IPunObservable, IPunInstantiateMagicCallback
 {
     [Header("References")]
 
@@ -25,6 +25,8 @@ public class LayoutObject : MonoBehaviourPun, IPunObservable
     public LayoutObjectView view = new LayoutObjectView();
     public LayoutObjectModel model = new LayoutObjectModel();
 
+    public Coroutine loadModelCoroutine => view.loadModelCoroutine;
+
     private void OnDrawGizmos()
     {
         Gizmos.color = Color.green;
@@ -39,6 +41,12 @@ public class LayoutObject : MonoBehaviourPun, IPunObservable
         view.Init(this);
     }
 
+    private void Start()
+    {
+        GizmosHandler.OnBoundingBoxToogle.AddListener(OnToogleBoundingBox);
+        OnToogleBoundingBox(GizmosHandler.isBoundingBoxActive);
+    }
+
     public void Select()
     {
         GizmosHandler.instance.SetGizmoTarget(this);
@@ -47,6 +55,11 @@ public class LayoutObject : MonoBehaviourPun, IPunObservable
     public void Refresh()
     {
         view.Refresh();
+    }
+
+    public void OnToogleBoundingBox(bool value)
+    {
+        view.SetBoundingBox(value);
     }
 
     public void UpdateTransform()
@@ -60,35 +73,9 @@ public class LayoutObject : MonoBehaviourPun, IPunObservable
     {
         photonView.TransferOwnership(player);
 
-        Debug.Log("TransferOwnership: " + player.ActorNumber);
+        DebugApp.Log("TransferOwnership: " + player.ActorNumber);
     }
 
-    public void SetInstanceData(InstanceData instanceData)
-    {
-        data.data = instanceData;
-        view.LoadModel();
-
-        Refresh();
-    }
-
-    [PunRPC]
-    public void SetInstanceDataJson(string instanceData)
-    {
-        SetInstanceData(instanceData.JsonToObject<InstanceData>());
-    }
-
-    public void SetInstanceDataAcrossNetwork(InstanceData instanceData)
-    {
-        data.data = instanceData;
-        photonView.RPC("SetInstanceDataJson", RpcTarget.OthersBuffered, instanceData.ObjectToJson());
-    }
-
-    public void SetLayoutInstanceData(LayoutInstanceData layoutInstanceData)
-    {
-        data = layoutInstanceData;
-        SetInstanceDataAcrossNetwork(layoutInstanceData.data);
-        Refresh();
-    }
     public LayoutTransform GetLayoutTransform()
     {
         data.transform.position = transform.position;
@@ -116,6 +103,21 @@ public class LayoutObject : MonoBehaviourPun, IPunObservable
         PhotonNetwork.Destroy(gameObject);
     }
 
+    public void OnPhotonInstantiate(PhotonMessageInfo info)
+    {
+        object[] instantiationData = info.photonView.InstantiationData;
+
+        LayoutInstanceData layoutInstanceData = JsonUtility.FromJson<LayoutInstanceData>((string)instantiationData[0]);
+
+        data = layoutInstanceData;
+
+        transform.position = data.transform.position;
+        transform.eulerAngles = data.transform.rotation;
+        transform.localScale = data.transform.scale;
+
+        view.LoadModel();
+    }
+
     public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
     {
         if (stream.IsWriting)
@@ -140,10 +142,11 @@ public class LayoutObjectView
     public BoxCollider boxCollider;
     public GameObject modelObjectWrapper;
 
+    public Transform boundingBoxTransform;
     public Renderer[] renderers;
     Bounds bounds;
 
-    Coroutine loadModelCoroutine;
+    public Coroutine loadModelCoroutine;
 
     public void Init(LayoutObject controller)
     {
@@ -160,6 +163,11 @@ public class LayoutObjectView
         return loadModelCoroutine = ModelCacheHandler.instance.GetModel(controller.data.data.model, OnModelLoaded);
     }
 
+    public void SetBoundingBox(bool value)
+    {
+        boundingBoxTransform.gameObject.SetActive(value);
+    }
+
     public void OnModelLoaded(GameObject modelObject)
     {
         if (modelObjectWrapper != null) GameObject.Destroy(modelObjectWrapper);
@@ -172,6 +180,8 @@ public class LayoutObjectView
         modelObjectWrapper.transform.localScale = Vector3.one;
 
         CreateBounds();
+
+        controller.UpdateTransform();
 
         loadModelCoroutine = null;
     }
@@ -190,8 +200,12 @@ public class LayoutObjectView
             {
                 bounds.Encapsulate(renderer.bounds);
             }
+
             boxCollider.center = transform.InverseTransformPoint(bounds.center);
             boxCollider.size = bounds.size;
+
+            boundingBoxTransform.localPosition = boxCollider.center;
+            boundingBoxTransform.localScale = boxCollider.size;
 
             transform.Translate(Vector3.up * ((bounds.size.y / 2.0f) - (bounds.center.y - transform.position.y)), Space.World);
         }

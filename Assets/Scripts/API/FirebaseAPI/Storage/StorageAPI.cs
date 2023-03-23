@@ -47,7 +47,7 @@ public class StorageAPI
 
         if (getBytesTask.Exception != null)
         {
-            Debug.LogWarning("Failed to get file: " + getBytesTask.Exception);
+            DebugApp.Log("Failed to get file: " + getBytesTask.Exception);
         }
         else
         {
@@ -64,7 +64,7 @@ public class StorageAPI
 
         if (putBytesTask.Exception != null)
         {
-            Debug.LogWarning("Failed to upload file: " + putBytesTask.Exception);
+            DebugApp.Log("Failed to upload file: " + putBytesTask.Exception);
         }
         else
         {
@@ -81,7 +81,7 @@ public class StorageAPI
 
         if (deleteTask.Exception != null)
         {
-            Debug.LogWarning("Failed to delete file: " + deleteTask.Exception);
+            DebugApp.Log("Failed to delete file: " + deleteTask.Exception);
         }
         else
         {
@@ -98,7 +98,7 @@ public class StorageAPI
 
         if (getMetadataTask.Exception != null)
         {
-            Debug.LogWarning("Failed to get metadata: " + getMetadataTask.Exception);
+            DebugApp.Log("Failed to get metadata: " + getMetadataTask.Exception);
         }
         else
         {

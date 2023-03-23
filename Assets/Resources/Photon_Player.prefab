@@ -26,8 +26,8 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1124775778784482069}
-  m_LocalRotation: {x: -0.14455923, y: 0.839304, z: -0.44908914, w: -0.2701673}
-  m_LocalPosition: {x: 18.219032, y: 30.064518, z: -1.5955899}
+  m_LocalRotation: {x: -0.2981397, y: 0.4116531, z: -0.14456311, w: -0.8489735}
+  m_LocalPosition: {x: 57.93832, y: 24.305113, z: 10.4964285}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -48,7 +48,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   playerRenderer: {fileID: 1124775779494192339}
-  hexColor: DB5E95
+  hexColor: A37721
 --- !u!114 &1124775778784482058
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -86,7 +86,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_SynchronizePosition: 1
   m_SynchronizeRotation: 1
-  m_SynchronizeScale: 0
+  m_SynchronizeScale: 1
   m_UseLocal: 1
 --- !u!1 &1124775779494192350
 GameObject:
@@ -215,7 +215,6 @@ GameObject:
   - component: {fileID: 3881543898554212967}
   - component: {fileID: 9023882689584720118}
   - component: {fileID: 1943675314819473604}
-  - component: {fileID: 4410456007644344535}
   m_Layer: 0
   m_Name: Glass
   m_TagString: Untagged
@@ -288,16 +287,3 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!65 &4410456007644344535
-BoxCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7514823536289551850}
-  m_Material: {fileID: 0}
-  m_IsTrigger: 0
-  m_Enabled: 1
-  serializedVersion: 2
-  m_Size: {x: 1, y: 1, z: 1}
-  m_Center: {x: 0, y: 0, z: 0}

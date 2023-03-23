@@ -15,6 +15,9 @@ public class GizmosHandler : MonoBehaviour
     public Transform selectedTransform;
 
     public static UnityEvent<LayoutObject> OnAddObject = new UnityEvent<LayoutObject>();
+    public static UnityEvent<bool> OnBoundingBoxToogle = new UnityEvent<bool>();
+
+    public static bool isBoundingBoxActive = false;
 
     private void Awake()
     {
@@ -66,5 +69,11 @@ public class GizmosHandler : MonoBehaviour
     public void SetGizmoSpace(TransformSpace space)
     {
         transformGizmo.space = space;
+    }
+
+    public static void ToggleBoundingBox()
+    {
+        isBoundingBoxActive = !isBoundingBoxActive;
+        OnBoundingBoxToogle.Invoke(isBoundingBoxActive);
     }
 }

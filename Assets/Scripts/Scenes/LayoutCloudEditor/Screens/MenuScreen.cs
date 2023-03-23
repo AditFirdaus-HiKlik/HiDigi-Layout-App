@@ -8,7 +8,7 @@ public class MenuScreen : ScreenBehaviour
 {
     public void CloseMenu()
     {
-        Debug.Log("Close Application");
+        DebugApp.Log("Close Application");
         PopClose();
     }
 
@@ -19,7 +19,7 @@ public class MenuScreen : ScreenBehaviour
 
     IEnumerator _QuitApplication()
     {
-        Debug.Log("Quit Application");
+        DebugApp.Log("Quit Application");
 
         PlayerHandler.instance.LeaveRoom();
 

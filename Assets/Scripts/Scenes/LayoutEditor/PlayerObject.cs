@@ -3,15 +3,16 @@ using System.Collections.Generic;
 using UnityEngine;
 using Photon.Pun;
 
-public class PlayerObject : MonoBehaviourPunCallbacks
+public class PlayerObject : MonoBehaviourPunCallbacks, IPunObservable
 {
     public static PlayerObject localPlayerInstance;
     public Renderer playerRenderer;
-    public string hexColor = null;
+    public string hexColor = "FFFFFF";
 
     private void Awake()
     {
         localPlayerInstance = this;
+        photonView.ObservedComponents.Add(this);
     }
 
     private void Start()
@@ -22,11 +23,8 @@ public class PlayerObject : MonoBehaviourPunCallbacks
     public void RandomizeColor()
     {
         hexColor = ColorUtility.ToHtmlStringRGB(Random.ColorHSV());
-
-        SetColorAcrossNetwork(hexColor);
     }
 
-    [PunRPC]
     public void SetColor(string hexColorValue)
     {
         hexColor = hexColorValue;
@@ -36,19 +34,31 @@ public class PlayerObject : MonoBehaviourPunCallbacks
         playerRenderer.material.color = color;
     }
 
-    public void SetColorAcrossNetwork(string hexColorValue)
+    public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
     {
-        hexColor = hexColorValue;
-        photonView.RPC("SetColor", RpcTarget.OthersBuffered, hexColorValue);
+        if (stream.IsWriting)
+        {
+            stream.SendNext(hexColor);
+        }
+        else
+        {
+            string newHexColor = (string)stream.ReceiveNext();
+
+            if (newHexColor != hexColor) SetColor(newHexColor);
+        }
     }
 
-    public void SetPosition(Vector3 position)
+    public Vector3 GetFrontRaycastPosition()
     {
-        transform.position = position;
-    }
+        Ray ray = new Ray(transform.position, transform.forward);
+        Plane plane = new Plane(Vector3.up, Vector3.zero);
+        float distance = 0;
 
-    public void SetRotation(Quaternion rotation)
-    {
-        transform.rotation = rotation;
+        if (plane.Raycast(ray, out distance))
+        {
+            return ray.GetPoint(distance);
+        }
+
+        return Vector3.zero;
     }
 }

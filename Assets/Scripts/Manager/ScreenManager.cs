@@ -46,7 +46,7 @@ public class ScreenManager : MonoBehaviour
 
             screenBehaviour.OnClose();
 
-            Debug.Log($"Screen closed: {screenBehaviour.name} | With data: {screenBehaviour.screenData.DictionaryToJson()}");
+            DebugApp.Log($"Screen closed: {screenBehaviour.name} | With data: {screenBehaviour.screenData.DictionaryToJson()}");
 
             Destroy(screenBehaviour.gameObject);
         }
@@ -62,7 +62,7 @@ public class ScreenManager : MonoBehaviour
         if (data != null) screenBehaviour.SetInitialData(data);
         if (callback != null) screenBehaviour.SetCallback(callback);
 
-        Debug.Log($"Screen opened: {screenBehaviour.name} | With data: {screenBehaviour.screenData.DictionaryToJson()}");
+        DebugApp.Log($"Screen opened: {screenBehaviour.name} | With data: {screenBehaviour.screenData.DictionaryToJson()}");
 
         screenStack.Push(screenBehaviour);
         return screenBehaviour;

@@ -49,10 +49,11 @@ public class EditorProjectInstance : MonoBehaviour
         LayoutInstanceData layoutInstanceData = new LayoutInstanceData();
 
         layoutInstanceData.data = instance;
+        layoutInstanceData.transform.position = PlayerObject.localPlayerInstance.GetFrontRaycastPosition();
 
         LayoutManager.InstantiateLayoutObject(layoutInstanceData);
 
-        Debug.Log("Instance selected: " + instance.name);
+        DebugApp.Log("Instance selected: " + instance.name);
     }
 
     public void AddInstance()

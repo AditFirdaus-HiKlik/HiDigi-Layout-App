@@ -60,7 +60,7 @@ public class LayoutManager : MonoBehaviour
             yield return DestroyLayoutObject(layoutObject);
         }
 
-        Debug.Log("Layout instance cleared");
+        DebugApp.Log("Layout instance cleared");
 
         if (layoutData == null)
         {
@@ -74,7 +74,7 @@ public class LayoutManager : MonoBehaviour
             yield return InstantiateLayoutObject(instance);
         }
 
-        Debug.Log("Layout instance loaded");
+        DebugApp.Log("Layout instance loaded");
     }
 
     public static void SaveInstance()
@@ -90,7 +90,7 @@ public class LayoutManager : MonoBehaviour
 
         layoutData.instances = instances;
 
-        Debug.Log("Layout instance saved");
+        DebugApp.Log("Layout instance saved");
 
         SaveLayoutData();
     }
@@ -115,11 +115,11 @@ public class LayoutManager : MonoBehaviour
                     OnLayoutDataProjectLoaded.Invoke(layoutData.project);
                 }
 
-                Debug.Log("Layout data loaded: " + layoutData.ObjectToJson());
+                DebugApp.Log("Layout data loaded: " + layoutData.ObjectToJson());
             }
         });
 
-        Debug.Log("Listener initialized");
+        DebugApp.Log("Listener initialized");
     }
 
     public static Coroutine InstantiateLayoutObject(LayoutInstanceData layoutInstanceData)
@@ -144,27 +144,29 @@ public class LayoutManager : MonoBehaviour
         GameObject layoutObject = null;
         LayoutObject layoutObjectComponent = null;
 
+        // Dictionary<string, object> data = new Dictionary<string, object>()
+        object[] initData = new object[] {
+            JsonUtility.ToJson(layoutInstanceData)
+        };
+
         // 3 Times to try
         for (int i = 0; i < 3; i++)
         {
-            layoutObject = PhotonNetwork.Instantiate("LayoutObject", Vector3.zero, Quaternion.identity);
+            layoutObject = PhotonNetwork.Instantiate("LayoutObject", Vector3.zero, Quaternion.identity, data: initData);
 
             if (layoutObject != null)
             {
-                Debug.Log("LayoutObject is not null, break the loop");
+                DebugApp.Log("LayoutObject is not null, break the loop");
                 layoutObjectComponent = layoutObject.GetComponent<LayoutObject>();
                 break;
             }
-            Debug.Log("LayoutObject is null, try again");
+            DebugApp.Log("LayoutObject is null, try again");
         }
 
-        layoutObjectComponent.SetLayoutInstanceData(layoutInstanceData);
-
-        yield return layoutObjectComponent.view.LoadModel();
-
-        layoutObjectComponent.view.CreateBounds();
-
-        layoutObjectComponent.UpdateTransform();
+        if (layoutObjectComponent.loadModelCoroutine != null)
+        {
+            yield return layoutObjectComponent.loadModelCoroutine;
+        }
 
         layoutObjectComponent.Select();
 
@@ -189,7 +191,7 @@ public class LayoutManager : MonoBehaviour
 
             yield return FirestoreAPI.SetDocument("sessions", layoutID, layoutData.ToDictionary());
 
-            Debug.Log("Layout data saved");
+            DebugApp.Log("Layout data saved");
         }
         finally
         {
@@ -198,7 +200,7 @@ public class LayoutManager : MonoBehaviour
 
         OnLayoutDataSyncing.Invoke(false);
 
-        Debug.Log("Layout data saved");
+        DebugApp.Log("Layout data saved");
     }
 
     [ContextMenu("Load Layout")]
@@ -237,7 +239,7 @@ public class LayoutManager : MonoBehaviour
                     instance.OnLayoutDataProjectLoaded.Invoke(layoutData.project);
                 }
 
-                Debug.Log("Layout data loaded: " + layoutData.ObjectToJson());
+                DebugApp.Log("Layout data loaded: " + layoutData.ObjectToJson());
 
                 yield return null;
             }

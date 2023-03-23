@@ -61,7 +61,7 @@ public class FirestoreAPI
 
         if (getDocTask.Exception != null)
         {
-            Debug.LogWarning("Failed to get document: " + getDocTask.Exception);
+            DebugApp.Log("Failed to get document: " + getDocTask.Exception);
         }
         else
         {
@@ -77,7 +77,7 @@ public class FirestoreAPI
 
         if (getCollectionTask.Exception != null)
         {
-            Debug.LogWarning("Failed to get collection: " + getCollectionTask.Exception);
+            DebugApp.Log("Failed to get collection: " + getCollectionTask.Exception);
         }
         else
         {
@@ -93,7 +93,7 @@ public class FirestoreAPI
 
         if (setDocTask.Exception != null)
         {
-            Debug.LogWarning("Failed to set document: " + setDocTask.Exception);
+            DebugApp.Log("Failed to set document: " + setDocTask.Exception);
         }
         else
         {
@@ -109,7 +109,7 @@ public class FirestoreAPI
 
         if (updateDocTask.Exception != null)
         {
-            Debug.LogWarning("Failed to update document: " + updateDocTask.Exception);
+            DebugApp.Log("Failed to update document: " + updateDocTask.Exception);
         }
         else
         {
@@ -125,7 +125,7 @@ public class FirestoreAPI
 
         if (deleteDocTask.Exception != null)
         {
-            Debug.LogWarning("Failed to delete document: " + deleteDocTask.Exception);
+            DebugApp.Log("Failed to delete document: " + deleteDocTask.Exception);
         }
         else
         {
@@ -141,7 +141,7 @@ public class FirestoreAPI
 
         if (addDocTask.Exception != null)
         {
-            Debug.LogWarning("Failed to add document: " + addDocTask.Exception);
+            DebugApp.Log("Failed to add document: " + addDocTask.Exception);
         }
         else
         {

@@ -38,11 +38,12 @@ public class ModelCacheHandler : MonoBehaviour
 
     IEnumerator _GetModel(InstanceDataModel model, UnityAction<GameObject> callback)
     {
-        if (modelCache.ContainsKey(model.guid))
-        {
-            CopyFromCache(model.guid, callback);
-            yield break;
-        }
+        // ! Unstable Code
+        // if (modelCache.ContainsKey(model.guid))
+        // {
+        //     CopyFromCache(model.guid, callback);
+        //     yield break;
+        // }
 
         string path = Path.Combine(cachePath, model.guid + model.fileExtension);
         string directory = Path.GetDirectoryName(path);
@@ -50,12 +51,12 @@ public class ModelCacheHandler : MonoBehaviour
         if (!Directory.Exists(directory))
         {
             Directory.CreateDirectory(directory);
-            Debug.Log($"[MODEL LOADER] [{model.guid}] Directory doesn't exist, creating {directory}");
+            DebugApp.Log($"[MODEL LOADER] [{model.guid}] Directory doesn't exist, creating {directory}");
         }
 
         if (!File.Exists(path))
         {
-            Debug.Log($"[MODEL LOADER] [{model.guid}] File doesn't exist on {path}, downloading {model.url}");
+            DebugApp.Log($"[MODEL LOADER] [{model.guid}] File doesn't exist on {path}, downloading {model.url}");
 
             var www = new UnityWebRequest(model.url);
 
@@ -67,13 +68,13 @@ public class ModelCacheHandler : MonoBehaviour
 
             if (www.result != UnityWebRequest.Result.Success)
             {
-                Debug.Log($"[MODEL LOADER] [{model.guid}] Error downloading {model.url} {www.error}");
+                DebugApp.Log($"[MODEL LOADER] [{model.guid}] Error downloading {model.url} {www.error}");
                 callback?.Invoke(null);
                 yield break;
             }
             else
             {
-                Debug.Log($"[MODEL LOADER] [{model.guid}] Downloaded {model.url}");
+                DebugApp.Log($"[MODEL LOADER] [{model.guid}] Downloaded {model.url}");
             }
         }
 
@@ -91,7 +92,9 @@ public class ModelCacheHandler : MonoBehaviour
         bool isLoaded = false;
         bool isError = false;
 
-        Debug.Log($"[MODEL LOADER] [{model.guid}] Loading model: {path}");
+        DebugApp.Log($"[MODEL LOADER] [{model.guid}] Loading model: {path}");
+
+        DebugApp.Log(model.isZipped.ToString());
 
         var context = AssetLoader.LoadModelFromFile(
             path,
@@ -104,43 +107,50 @@ public class ModelCacheHandler : MonoBehaviour
             },
             onProgress: (context, progress) =>
             {
-                Debug.Log($"[MODEL LOADER] [{model.guid}] Loading... {progress * 100}%");
+                DebugApp.Log($"[MODEL LOADER] [{model.guid}] Loading... {progress * 100}%");
             },
             onError: (context) =>
             {
+                DebugApp.Log($"[MODEL LOADER] [{model.guid}] Error loading model: {path} | {context.GetInnerException()}");
                 isError = true;
-            }
+            },
+            isZipFile: model.isZipped
         );
 
         yield return new WaitUntil(() => isLoaded);
 
         if (isError)
         {
-            Debug.Log($"[MODEL LOADER] [{model.guid}] Error loading model: {path}");
+            DebugApp.Log($"[MODEL LOADER] [{model.guid}] Error loading model: {path}");
             callback?.Invoke(null);
             yield break;
         }
 
-        Debug.Log($"[MODEL LOADER] [{model.guid}] Loaded model: {path}");
+        DebugApp.Log($"[MODEL LOADER] [{model.guid}] Loaded model: {path}");
 
         if (!modelCache.ContainsKey(model.guid)) modelCache.Add(model.guid, modelObjectWrapper);
 
-        CopyFromCache(model.guid, callback);
+        GameObject go = Instantiate(modelObjectWrapper);
+        go.SetActive(true);
+        callback(go);
+
+        DebugApp.Log($"[MODEL LOADER] [{model.guid}] Callback called with copy of {model.guid}");
     }
 
-    public void CopyFromCache(string guid, UnityAction<GameObject> callback)
-    {
-        if (modelCache.ContainsKey(guid))
-        {
-            GameObject go = Instantiate(modelCache[guid]);
-            go.SetActive(true);
-            callback(go);
+    // ! Unstable Code
+    // public void CopyFromCache(string guid, UnityAction<GameObject> callback)
+    // {
+    //     if (modelCache.ContainsKey(guid))
+    //     {
+    //         GameObject go = Instantiate(modelCache[guid]);
+    //         go.SetActive(true);
+    //         callback(go);
 
-            Debug.Log($"[MODEL LOADER] [{guid}] Callback called with copy of {guid}");
-        }
-        else
-        {
-            Debug.Log($"[MODEL LOADER] [{guid}] is already in cache");
-        }
-    }
+    //         DebugApp.Log($"[MODEL LOADER] [{guid}] Callback called with copy of {guid}");
+    //     }
+    //     else
+    //     {
+    //         DebugApp.Log($"[MODEL LOADER] [{guid}] is already in cache");
+    //     }
+    // }
 }

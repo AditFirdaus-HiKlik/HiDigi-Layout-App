@@ -18,7 +18,7 @@ public class FirebaseAPI : MonoBehaviour
 
             string _appName = Guid.NewGuid().ToString();
 
-            Debug.Log("FirebaseAPI.appName: " + _appName);
+            DebugApp.Log("FirebaseAPI.appName: " + _appName);
 
             return _app = FirebaseApp.Create(
                 FirebaseApp.DefaultInstance.Options,

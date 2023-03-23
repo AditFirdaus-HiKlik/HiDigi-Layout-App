@@ -28,10 +28,10 @@ public class AuthAPI
     {
         DocumentSnapshot documentSnapshot = null;
 
-        Debug.Log("Getting user data");
+        DebugApp.Log("Getting user data");
 
-        Debug.Log("username: " + username);
-        Debug.Log("password: " + password);
+        DebugApp.Log("username: " + username);
+        DebugApp.Log("password: " + password);
 
         yield return FirestoreAPI.GetDocument("users", username, (result) => documentSnapshot = result);
 
@@ -45,12 +45,12 @@ public class AuthAPI
             }
             else
             {
-                Debug.LogWarning("Wrong password");
+                DebugApp.Log("Wrong password");
             }
         }
         else
         {
-            Debug.LogWarning("User not found");
+            DebugApp.Log("User not found");
         }
     }
 }

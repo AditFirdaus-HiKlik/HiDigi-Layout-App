@@ -50,11 +50,11 @@ public class DatabaseAPI
 
         if (getDocTask.Exception != null)
         {
-            Debug.LogWarning("Failed to get document: " + getDocTask.Exception);
+            DebugApp.Log("Failed to get document: " + getDocTask.Exception);
         }
         else
         {
-            Debug.Log("Got document: " + getDocTask.Result.GetRawJsonValue());
+            DebugApp.Log("Got document: " + getDocTask.Result.GetRawJsonValue());
         }
     }
     public static IEnumerator GetCollectionAsync(string collection)
@@ -66,11 +66,11 @@ public class DatabaseAPI
 
         if (getDocTask.Exception != null)
         {
-            Debug.LogWarning("Failed to get collection: " + getDocTask.Exception);
+            DebugApp.Log("Failed to get collection: " + getDocTask.Exception);
         }
         else
         {
-            Debug.Log("Got collection: " + getDocTask.Result.GetRawJsonValue());
+            DebugApp.Log("Got collection: " + getDocTask.Result.GetRawJsonValue());
         }
     }
     public static IEnumerator SetDocumentAsync(string collection, string document, string data)
@@ -82,7 +82,7 @@ public class DatabaseAPI
 
         if (setDocTask.Exception != null)
         {
-            Debug.LogWarning("Failed to set document: " + setDocTask.Exception);
+            DebugApp.Log("Failed to set document: " + setDocTask.Exception);
         }
     }
     public static IEnumerator UpdateDocumentAsync(string collection, string document, string data)
@@ -94,7 +94,7 @@ public class DatabaseAPI
 
         if (updateDocTask.Exception != null)
         {
-            Debug.LogWarning("Failed to update document: " + updateDocTask.Exception);
+            DebugApp.Log("Failed to update document: " + updateDocTask.Exception);
         }
     }
     public static IEnumerator DeleteDocumentAsync(string collection, string document)
@@ -105,7 +105,7 @@ public class DatabaseAPI
 
         if (deleteDocTask.Exception != null)
         {
-            Debug.LogWarning("Failed to delete document: " + deleteDocTask.Exception);
+            DebugApp.Log("Failed to delete document: " + deleteDocTask.Exception);
         }
     }
     public static IEnumerator AddDocumentAsync(string collection, string document, string data)
@@ -116,7 +116,7 @@ public class DatabaseAPI
 
         if (addDocTask.Exception != null)
         {
-            Debug.LogWarning("Failed to add document: " + addDocTask.Exception);
+            DebugApp.Log("Failed to add document: " + addDocTask.Exception);
         }
     }
 }

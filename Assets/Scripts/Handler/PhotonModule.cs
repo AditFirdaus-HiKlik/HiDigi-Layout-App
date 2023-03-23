@@ -39,12 +39,12 @@ public class PhotonModule : MonoBehaviourPunCallbacks
     public void ConnectToPhotonServer()
     {
         PhotonNetwork.ConnectUsingSettings();
-        Debug.Log("Connecting to Photon Server");
+        DebugApp.Log("Connecting to Photon Server");
     }
 
     public void DisconnectFromPhotonServer(UnityAction callback = null)
     {
         PhotonNetwork.Disconnect();
-        Debug.Log("Disconnecting from Photon Server");
+        DebugApp.Log("Disconnecting from Photon Server");
     }
 }

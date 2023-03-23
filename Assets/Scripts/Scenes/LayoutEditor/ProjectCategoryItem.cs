@@ -45,14 +45,14 @@ public class ProjectCategoryItem : MonoBehaviour, IPointerDownHandler
 
     public void SelectCategory()
     {
-        Debug.Log("Selecting category: " + categoryData.name);
+        DebugApp.Log("Selecting category: " + categoryData.name);
 
         projectCategoryController.SelectCategory(categoryData);
     }
 
     public void EditCategory()
     {
-        Debug.Log("Editing category: " + categoryData.name);
+        DebugApp.Log("Editing category: " + categoryData.name);
 
         projectCategoryController.EditCategory(categoryData);
     }

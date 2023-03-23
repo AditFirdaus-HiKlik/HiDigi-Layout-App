@@ -54,14 +54,14 @@ public class ProjectInstanceItem : MonoBehaviour, IPointerDownHandler
 
     public void SelectInstance()
     {
-        Debug.Log("Selecting instance: " + instanceData.name);
+        DebugApp.Log("Selecting instance: " + instanceData.name);
 
         projectInstanceController.SelectInstance(instanceData);
     }
 
     public void EditInstance()
     {
-        Debug.Log("Editing instance: " + instanceData.name);
+        DebugApp.Log("Editing instance: " + instanceData.name);
 
         projectInstanceController.EditInstance(instanceData);
     }
@@ -133,7 +133,7 @@ public class ProjectInstanceItemView
 
         if (www.result != UnityWebRequest.Result.Success)
         {
-            Debug.Log(www.error);
+            DebugApp.Log(www.error);
         }
         else
         {

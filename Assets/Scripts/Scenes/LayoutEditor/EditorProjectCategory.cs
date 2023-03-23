@@ -42,7 +42,7 @@ public class EditorProjectCategory : MonoBehaviour
 
         projectController.RenderInstance(category.GetInstances());
 
-        Debug.Log("Category selected: " + category.name);
+        DebugApp.Log("Category selected: " + category.name);
     }
 
     public void ShowAllInstances()

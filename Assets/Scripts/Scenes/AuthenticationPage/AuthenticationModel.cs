@@ -21,7 +21,7 @@ public class AuthenticationModel : MonoBehaviour
             UserManager.isUserLoggedIn = true;
             UserManager.userData = userData;
 
-            Debug.Log("Login success");
+            DebugApp.Log("Login success");
         });
     }
 
